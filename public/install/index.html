@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMTech 安装向导 - Laravel 11</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .install-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+        }
+        .install-header {
+            background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .install-header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .install-header p {
+            opacity: 0.9;
+        }
+        .install-steps {
+            display: flex;
+            background: #f8fafc;
+            padding: 0;
+        }
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            font-weight: 600;
+            color: #6b7280;
+            position: relative;
+        }
+        .step.active {
+            color: #2563EB;
+            background: white;
+        }
+        .step.completed {
+            color: #10B981;
+        }
+        .step-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            margin-right: 10px;
+            color: #6b7280;
+        }
+        .step.active .step-number {
+            background: #2563EB;
+            color: white;
+        }
+        .step.completed .step-number {
+            background: #10B981;
+            color: white;
+        }
+        .install-content {
+            padding: 40px;
+        }
+        .step-content {
+            display: none;
+        }
+        .step-content.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 24px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #2563EB;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .alert-error {
+            background: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #EF4444;
+        }
+        .alert-success {
+            background: #D1FAE5;
+            color: #065F46;
+            border: 1px solid #10B981;
+        }
+        .alert-info {
+            background: #DBEAFE;
+            color: #1E40AF;
+            border: 1px solid #3B82F6;
+        }
+        .requirements-list {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .requirement-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px 0;
+        }
+        .requirement-item.passed {
+            color: #10B981;
+        }
+        .requirement-item.failed {
+            color: #EF4444;
+        }
+        .requirement-icon {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="install-container">
+        <div class="install-header">
+            <h1>🚀 MMTech 安装向导</h1>
+            <p>Laravel 11 企业网站系统</p>
+        </div>
+        
+        <div class="install-steps">
+            <div class="step active" id="step1">
+                <span class="step-number">1</span>
+                <span class="step-text">环境检测</span>
+            </div>
+            <div class="step" id="step2">
+                <span class="step-number">2</span>
+                <span class="step-text">数据库配置</span>
+            </div>
+            <div class="step" id="step3">
+                <span class="step-number">3</span>
+                <span class="step-text">管理员设置</span>
+            </div>
+            <div class="step" id="step4">
+                <span class="step-number">4</span>
+                <span class="step-text">完成安装</span>
+            </div>
+        </div>
+        
+        <div class="install-content">
+            <!-- 步骤1：环境检测 -->
+            <div class="step-content active" id="step1-content">
+                <h2>环境检测</h2>
+                <p>正在检测服务器环境是否符合 Laravel 11 要求...</p>
+                
+                <div id="env-check" class="requirements-list">
+                    <div class="requirement-item">
+                        <span class="requirement-icon">⏳</span>
+                        <span>正在检测 PHP 版本...</span>
+                    </div>
+                    <div class="requirement-item">
+                        <span class="requirement-icon">⏳</span>
+                        <span>正在检测扩展支持...</span>
+                    </div>
+                    <div class="requirement-item">
+                        <span class="requirement-icon">⏳</span>
+                        <span>正在检测目录权限...</span>
+                    </div>
+                </div>
+                
+                <div id="env-alert" class="alert"></div>
+                
+                <button class="btn btn-primary" onclick="checkEnvironment()" id="env-check-btn">
+                    开始检测
+                </button>
+            </div>
+            
+            <!-- 步骤2：数据库配置 -->
+            <div class="step-content" id="step2-content">
+                <h2>数据库配置</h2>
+                <p>请填写数据库连接信息</p>
+                
+                <form id="db-form">
+                    <div class="form-group">
+                        <label>数据库主机</label>
+                        <input type="text" name="db_host" value="127.0.0.1" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>数据库端口</label>
+                        <input type="text" name="db_port" value="3306" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>数据库名称</label>
+                        <input type="text" name="db_name" value="mmtech_laravel" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>数据库用户名</label>
+                        <input type="text" name="db_user" value="root" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>数据库密码</label>
+                        <input type="password" name="db_pass" placeholder="请输入数据库密码">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>表前缀</label>
+                        <input type="text" name="db_prefix" value="mm_" required>
+                    </div>
+                    
+                    <div id="db-alert" class="alert"></div>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn" onclick="showStep(1)">
+                            上一步
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="testDatabase()" id="db-test-btn">
+                            测试连接
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- 步骤3：管理员设置 -->
+            <div class="step-content" id="step3-content">
+                <h2>管理员设置</h2>
+                <p>请设置后台管理员账号</p>
+                
+                <form id="admin-form">
+                    <div class="form-group">
+                        <label>管理员用户名</label>
+                        <input type="text" name="admin_username" value="admin" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>管理员密码</label>
+                        <input type="password" name="admin_password" required placeholder="请输入密码">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>确认密码</label>
+                        <input type="password" name="admin_password_confirm" required placeholder="请再次输入密码">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>管理员邮箱</label>
+                        <input type="email" name="admin_email" required placeholder="admin@mmtech.ltd">
+                    </div>
+                    
+                    <div id="admin-alert" class="alert"></div>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn" onclick="showStep(2)">
+                            上一步
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="installSystem()" id="install-btn">
+                            开始安装
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- 步骤4：完成安装 -->
+            <div class="step-content" id="step4-content">
+                <h2>🎉 安装完成！</h2>
+                
+                <div id="install-result">
+                    <div class="alert alert-info">
+                        <p>正在安装系统，请稍候...</p>
+                    </div>
+                </div>
+                
+                <div id="success-info" style="display: none;">
+                    <div class="alert alert-success">
+                        <h3>✅ 安装成功！</h3>
+                        <p>MMTech 企业网站系统已成功安装。</p>
+                    </div>
+                    
+                    <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <h4>访问信息：</h4>
+                        <p><strong>前台首页：</strong> <a href="/" target="_blank">/</a></p>
+                        <p><strong>后台登录：</strong> <a href="/admin/login" target="_blank">/admin/login</a></p>
+                        <p><strong>管理员账号：</strong> <span id="admin-username">admin</span></p>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h4>⚠️ 重要安全提示</h4>
+                        <p>安装完成后，请立即删除 <code>public/install/</code> 目录：</p>
+                        <pre style="background: #1f2937; color: white; padding: 10px; border-radius: 4px; margin-top: 10px;">
+rm -rf public/install/</pre>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="window.location.href='/'">
+                        访问网站首页
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 步骤管理
+        function showStep(step) {
+            // 更新步骤状态
+            document.querySelectorAll('.step').forEach((el, index) => {
+                el.classList.remove('active', 'completed');
+                if (index + 1 < step) {
+                    el.classList.add('completed');
+                } else if (index + 1 === step) {
+                    el.classList.add('active');
+                }
+            });
+            
+            // 显示对应内容
+            document.querySelectorAll('.step-content').forEach((el, index) => {
+                el.classList.remove('active');
+                if (index + 1 === step) {
+                    el.classList.add('active');
+                }
+            });
+        }
+        
+        // 环境检测
+        function checkEnvironment() {
+            const btn = document.getElementById('env-check-btn');
+            const alert = document.getElementById('env-alert');
+            const envCheck = document.getElementById('env-check');
+            
+            btn.disabled = true;
+            btn.textContent = '检测中...';
+            alert.style.display = 'none';
+            
+            fetch('./install_check.php')
+                .then(res => res.json())
+                .then(data => {
+                    envCheck.innerHTML = '';
+                    
+                    if (data.passed) {
+                        // 显示成功结果
+                        data.requirements.forEach(req => {
+                            const item = document.createElement('div');
+                            item.className = `requirement-item ${req.passed ? 'passed' : 'failed'}`;
+                            item.innerHTML = `
+                                <span class="requirement-icon">${req.passed ? '✅' : '❌'}</span>
+                                <span>${req.name}: ${req.value} ${req.required ? `(要求: ${req.required})` : ''}</span>
+                            `;
+                            envCheck.appendChild(item);
+                        });
+                        
+                        alert.className = 'alert alert-success';
+                        alert.textContent = '✅ 环境检测通过，可以继续安装';
+                        alert.style.display = 'block';
+                        
+                        setTimeout(() => {
+                            showStep(2);
+                        }, 1000);
+                    } else {
+                        // 显示失败结果
+                        data.requirements.forEach(req => {
+                            const item = document.createElement('div');
+                            item.className = `requirement-item ${req.passed ? 'passed' : 'failed'}`;
+                            item.innerHTML = `
+                                <span class="requirement-icon">${req.passed ? '✅' : '❌'}</span>
+                                <span>${req.name}: ${req.value} ${req.required ? `(要求: ${req.required})` : ''}</span>
+                            `;
+                            envCheck.appendChild(item);
+                        });
+                        
+                        alert.className = 'alert alert-error';
+                        alert.textContent = '❌ 环境检测未通过，请解决以上问题';
+                        alert.style.display = 'block';
+                    }
+                })
+                .catch(err => {
+                    alert.className = 'alert alert-error';
+                    alert.textContent = '环境检测失败：' + err.message;
+                    alert.style.display = 'block';
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.textContent = '重新检测';
+                });
+        }
+        
+        // 数据库测试
+        function testDatabase() {
+            const btn = document.getElementById('db-test-btn');
+            const alert = document.getElementById('db-alert');
+            const form = document.getElementById('db-form');
+            
+            btn.disabled = true;
+            btn.textContent = '测试中...';
+            alert.style.display = 'none';
+            
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+            
+            fetch('./install_test_db.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert.className = 'alert alert-success';
+                    alert.textContent = '✅ 数据库连接成功';
+                    alert.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        showStep(3);
+                    }, 1000);
+                } else {
+                    alert.className = 'alert alert-error';
+                    alert.textContent = '❌ ' + data.message;
+                    alert.style.display = 'block';
+                }
+            })
+            .catch(err => {
+                alert.className = 'alert alert-error';
+                alert.textContent = '数据库测试失败：' + err.message;
+                alert.style.display = 'block';
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.textContent = '测试连接';
+            });
+        }
+        
+        // 安装系统
+        function installSystem() {
+            const btn = document.getElementById('install-btn');
+            const alert = document.getElementById('admin-alert');
+            const adminForm = document.getElementById('admin-form');
+            const dbForm = document.getElementById('db-form');
+            
+            // 验证密码
+            const password = adminForm.admin_password.value;
+            const confirmPassword = adminForm.admin_password_confirm.value;
+            
+            if (password !== confirmPassword) {
+                alert.className = 'alert alert-error';
+                alert.textContent = '两次输入的密码不一致';
+                alert.style.display = 'block';
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = '安装中...';
+            alert.style.display = 'none';
+            
+            // 合并表单数据
+            const adminData = Object.fromEntries(new FormData(adminForm));
+            const dbData = Object.fromEntries(new FormData(dbForm));
+            
+            const installData = {
+                db: dbData,
+                admin: adminData
+            };
+            
+            fetch('./install_execute.php', {
+                method: 'POST',
+                headers: {'
