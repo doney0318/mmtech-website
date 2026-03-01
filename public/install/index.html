@@ -384,7 +384,12 @@ rm -rf public/install/</pre>
             alert.style.display = 'none';
             
             fetch('./install_check.php')
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                    }
+                    return res.json();
+                })
                 .then(data => {
                     envCheck.innerHTML = '';
                     
@@ -425,8 +430,9 @@ rm -rf public/install/</pre>
                     }
                 })
                 .catch(err => {
+                    console.error('环境检测错误:', err);
                     alert.className = 'alert alert-error';
-                    alert.textContent = '环境检测失败：' + err.message;
+                    alert.textContent = '环境检测失败：' + err.message + '。请检查 PHP 是否正常工作。';
                     alert.style.display = 'block';
                 })
                 .finally(() => {
@@ -453,7 +459,12 @@ rm -rf public/install/</pre>
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(data)
             })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+                return res.json();
+            })
             .then(data => {
                 if (data.success) {
                     alert.className = 'alert alert-success';
@@ -470,6 +481,7 @@ rm -rf public/install/</pre>
                 }
             })
             .catch(err => {
+                console.error('数据库测试错误:', err);
                 alert.className = 'alert alert-error';
                 alert.textContent = '数据库测试失败：' + err.message;
                 alert.style.display = 'block';
@@ -499,18 +511,4 @@ rm -rf public/install/</pre>
             }
             
             btn.disabled = true;
-            btn.textContent = '安装中...';
-            alert.style.display = 'none';
-            
-            // 合并表单数据
-            const adminData = Object.fromEntries(new FormData(adminForm));
-            const dbData = Object.fromEntries(new FormData(dbForm));
-            
-            const installData = {
-                db: dbData,
-                admin: adminData
-            };
-            
-            fetch('./install_execute.php', {
-                method: 'POST',
-                headers: {'
+            btn.textContent = '安装中
