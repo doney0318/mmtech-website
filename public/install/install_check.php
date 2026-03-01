@@ -8,6 +8,9 @@ header('Content-Type: application/json');
 $requirements = [];
 $passed = true;
 
+// 获取项目根目录
+$projectRoot = realpath(__DIR__ . '/../..');
+
 // PHP 版本检测
 $phpVersion = PHP_VERSION;
 $phpRequired = '8.2.0';
@@ -41,14 +44,13 @@ foreach ($requiredExtensions as $ext => $name) {
     if (!$extPassed) $passed = false;
 }
 
-// 目录权限检测
+// 目录权限检测 - 使用绝对路径
 $requiredDirs = [
-    '../storage' => 'storage 目录',
-    '../bootstrap/cache' => 'bootstrap/cache 目录'
+    $projectRoot . '/storage' => 'storage 目录',
+    $projectRoot . '/bootstrap/cache' => 'bootstrap/cache 目录'
 ];
 
-foreach ($requiredDirs as $dir => $name) {
-    $dirPath = __DIR__ . '/' . $dir;
+foreach ($requiredDirs as $dirPath => $name) {
     $writable = is_writable($dirPath);
     $requirements[] = [
         'name' => $name,
@@ -60,7 +62,7 @@ foreach ($requiredDirs as $dir => $name) {
 }
 
 // Composer 检测
-$composerJson = __DIR__ . '/../composer.json';
+$composerJson = $projectRoot . '/composer.json';
 $composerExists = file_exists($composerJson);
 $requirements[] = [
     'name' => 'Composer 配置',
@@ -75,5 +77,6 @@ echo json_encode([
     'requirements' => $requirements,
     'php_version' => $phpVersion,
     'server_software' => $_SERVER['SERVER_SOFTWARE'] ?? '未知',
-    'current_dir' => __DIR__
+    'current_dir' => __DIR__,
+    'project_root' => $projectRoot
 ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);

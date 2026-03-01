@@ -19,16 +19,18 @@ foreach ($extensions as $ext) {
 
 echo "\n";
 
-// 检查目录权限
+// 检查目录权限 - 修复路径问题
+$projectRoot = realpath(__DIR__ . '/../..');
+echo "项目根目录: " . $projectRoot . "\n\n";
+
 $dirs = [
-    '../storage' => 'storage 目录',
-    '../bootstrap/cache' => 'bootstrap/cache 目录'
+    $projectRoot . '/storage' => 'storage 目录',
+    $projectRoot . '/bootstrap/cache' => 'bootstrap/cache 目录'
 ];
 
-foreach ($dirs as $path => $name) {
-    $fullPath = __DIR__ . '/' . $path;
+foreach ($dirs as $fullPath => $name) {
     if (!is_dir($fullPath)) {
-        echo $name . ": ❌ 目录不存在\n";
+        echo $name . ": ❌ 目录不存在 (" . $fullPath . ")\n";
     } else {
         echo $name . ": " . (is_writable($fullPath) ? "✅ 可写" : "❌ 不可写") . "\n";
     }
