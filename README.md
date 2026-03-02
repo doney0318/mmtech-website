@@ -22,6 +22,7 @@
 - **PHP**: 8.2 或更高版本
 - **数据库**: MySQL 5.7+ / MariaDB 10.3+
 - **Web 服务器**: Nginx / Apache
+- **Composer**: 2.0 或更高版本 (依赖管理)
 - **扩展要求**:
   - PDO MySQL 扩展
   - OpenSSL 扩展
@@ -29,6 +30,9 @@
   - JSON 扩展
   - cURL 扩展
   - Fileinfo 扩展
+  - Bcmath 扩展
+  - XML 扩展
+  - Tokenizer 扩展
 
 ### 推荐环境
 - **操作系统**: Ubuntu 22.04 / CentOS 8 / Debian 11
@@ -73,7 +77,21 @@ FLUSH PRIVILEGES;
 EXIT;
 ```
 
-#### 2. 设置目录权限
+#### 2. 安装 Composer 依赖
+```bash
+# 安装 Composer (如果未安装)
+# macOS: brew install composer
+# Ubuntu/Debian: sudo apt install composer
+# CentOS/RHEL: sudo yum install composer
+
+# 安装项目依赖
+composer install
+
+# 如果使用中国网络，可以使用镜像加速
+composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/
+```
+
+#### 3. 设置目录权限
 ```bash
 # 设置存储目录权限
 chmod -R 775 storage bootstrap/cache
@@ -378,6 +396,105 @@ php artisan serve
 3. 创建控制器：`php artisan make:controller ControllerName`
 4. 创建视图：在 `resources/views/` 添加模板文件
 5. 定义路由：在 `routes/web.php` 添加路由
+
+## 🔧 Composer 配置说明
+
+### 关于 composer.json
+本项目已包含完整的 `composer.json` 配置文件，定义了 Laravel 11 项目的所有依赖。
+
+#### 主要依赖
+- **laravel/framework**: ^11.0 (Laravel 11 核心框架)
+- **laravel/sanctum**: ^4.0 (API 认证)
+- **laravel/tinker**: ^2.9 (交互式命令行)
+- **guzzlehttp/guzzle**: ^7.9 (HTTP 客户端)
+
+#### 开发依赖
+- **phpunit/phpunit**: ^10.5 (单元测试)
+- **fakerphp/faker**: ^1.23 (测试数据生成)
+- **laravel/pint**: ^1.13 (代码格式化)
+
+### 安装 Composer
+
+#### macOS
+```bash
+brew install php@8.2
+brew install composer
+```
+
+#### Ubuntu/Debian
+```bash
+sudo apt update
+sudo apt install php8.2 php8.2-{mbstring,xml,curl,mysql,zip,gd,bcmath} composer
+```
+
+#### CentOS/RHEL
+```bash
+sudo yum install epel-release
+sudo yum install php82 php82-php-{mbstring,xml,curl,mysqlnd,zip,gd,bcmath} composer
+```
+
+### 安装项目依赖
+```bash
+# 进入项目目录
+cd mmtech-website
+
+# 安装依赖
+composer install
+
+# 使用中国镜像加速 (可选)
+composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/
+composer clear-cache
+composer install
+```
+
+### 常见 Composer 问题
+
+#### 1. 内存限制错误
+```bash
+# 临时增加内存限制
+COMPOSER_MEMORY_LIMIT=-1 composer install
+
+# 或修改 php.ini
+memory_limit = 2G
+```
+
+#### 2. 扩展缺失错误
+```bash
+# 检查已安装的扩展
+php -m
+
+# 安装缺失的扩展 (Ubuntu 示例)
+sudo apt install php8.2-{mbstring,xml,curl,mysql,zip,gd,bcmath}
+```
+
+#### 3. 版本冲突
+```bash
+# 更新依赖版本
+composer update
+
+# 或指定特定版本
+composer require laravel/framework:11.0.0
+```
+
+### 验证安装
+```bash
+# 检查 PHP 版本
+php --version
+
+# 检查 Composer
+composer --version
+
+# 检查 Laravel
+php artisan --version
+
+# 检查依赖
+composer show
+```
+
+### 更多信息
+- 详细配置指南: [COMPOSER_SETUP_GUIDE.md](COMPOSER_SETUP_GUIDE.md)
+- 项目检查脚本: `./check_composer_setup.sh`
+- Composer 官方文档: https://getcomposer.org/doc/
 
 ## 📞 支持与帮助
 
