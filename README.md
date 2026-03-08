@@ -42,6 +42,9 @@
 
 ## 🚀 快速开始
 
+### ⚠️ 重要：项目状态说明
+当前项目已从 ThinkPHP 8.0 转换为 Laravel 11，但缺少 `vendor` 目录和部分缓存文件。首次安装时需要运行 `composer install` 来生成这些文件。
+
 ### 第一步：获取代码
 
 #### 方式一：Git 克隆（推荐）
@@ -51,6 +54,10 @@ git clone https://github.com/doney0318/mmtech-website.git
 
 # 进入项目目录
 cd mmtech-website
+
+# 运行测试脚本检查环境
+chmod +x server_test.sh
+./server_test.sh
 ```
 
 #### 方式二：下载 ZIP
@@ -77,18 +84,25 @@ FLUSH PRIVILEGES;
 EXIT;
 ```
 
-#### 2. 安装 Composer 依赖
+#### 2. 安装 Composer 依赖（关键步骤）
 ```bash
 # 安装 Composer (如果未安装)
 # macOS: brew install composer
 # Ubuntu/Debian: sudo apt install composer
 # CentOS/RHEL: sudo yum install composer
 
-# 安装项目依赖
-composer install
+# 重要：当前项目缺少 vendor 目录，需要首次安装
+# 安装项目依赖（使用优化模式）
+composer install --no-dev --optimize-autoloader
+
+# 如果出现 "Could not open input file: artisan" 错误
+# 确保 artisan 文件有执行权限
+chmod +x artisan
 
 # 如果使用中国网络，可以使用镜像加速
 composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/
+composer clear-cache
+composer install --no-dev --optimize-autoloader
 ```
 
 #### 3. 设置目录权限
@@ -261,6 +275,27 @@ mmtech-website/
 3. 更新语言切换器
 
 ## 🚨 故障排除
+
+### 当前项目特定问题
+
+#### 0. "Could not open input file: artisan"（当前项目最常见）
+**原因**: 项目从 ThinkPHP 转换为 Laravel，缺少核心文件
+**解决**:
+```bash
+# 1. 确保 artisan 文件存在且有执行权限
+ls -la artisan
+chmod +x artisan
+
+# 2. 如果 artisan 不存在，从 GitHub 重新拉取
+git pull origin main
+
+# 3. 安装 Composer 依赖（关键步骤）
+rm -rf vendor composer.lock
+composer install --no-dev --optimize-autoloader
+
+# 4. 验证安装
+php artisan --version
+```
 
 ### 常见问题
 
@@ -531,109 +566,158 @@ composer show
 
 ---
 
-**最后更新**: 2026-03-01  
-**版本**: 1.0.0  
-**状态**: 生产就绪  
+**最后更新**: 2026-03-08  
+**版本**: 1.1.0 (Laravel 11 转换版)  
+**状态**: 核心文件已修复，待测试安装  
 
-💡 **提示**: 安装过程中遇到任何问题，请参考故障排除部分或提交 Issue。祝您使用愉快！
-## 🚀 服务器安装指南
+💡 **提示**: 当前项目已从 ThinkPHP 转换为 Laravel 11，首次安装需要运行 `composer install`。安装过程中遇到任何问题，请参考故障排除部分或运行 `./server_test.sh` 获取诊断信息。
+## 🚀 服务器快速安装（针对当前项目状态）
 
-### 1. 克隆项目
+### ⚠️ 重要说明
+当前项目已从 ThinkPHP 8.0 转换为 Laravel 11，但缺少一些核心文件。请按以下步骤安装：
+
+### 1. 克隆项目并检查
 ```bash
+# 克隆项目
 cd /root
-git clone git@github.com:doney0318/mmtech-website.git
+git clone https://github.com/doney0318/mmtech-website.git
 cd mmtech-website
+
+# 运行测试脚本检查环境
+chmod +x server_test.sh
+./server_test.sh
 ```
 
-### 2. 安装 Composer 依赖
+### 2. 安装 Composer 依赖（关键步骤）
 ```bash
-# 安装 Composer（如果未安装）
-curl -sS https://getcomposer.org/installer | php
-mv composer.phar /usr/local/bin/composer
+# 如果 vendor 目录不存在，需要安装依赖
+if [ ! -d "vendor" ]; then
+    echo "安装 Composer 依赖..."
+    composer install --no-dev --optimize-autoloader
+else
+    echo "vendor 目录已存在，跳过安装"
+fi
 
-# 安装项目依赖
+# 如果出现 "Could not open input file: artisan" 错误
+# 确保 artisan 文件存在且有执行权限
+chmod +x artisan
+```
+
+### 3. 验证安装
+```bash
+# 测试 Laravel 是否正常工作
+php artisan --version
+
+# 如果出现错误，尝试重新安装
+rm -rf vendor composer.lock
 composer install --no-dev --optimize-autoloader
 ```
 
-### 3. 配置环境
+### 4. 配置环境
 ```bash
-# 复制环境配置文件
+# 复制环境配置
 cp .env.example .env
 
 # 生成应用密钥
 php artisan key:generate
 
-# 配置数据库连接（编辑 .env 文件）
-# DB_CONNECTION=mysql
-# DB_HOST=127.0.0.1
-# DB_PORT=3306
-# DB_DATABASE=mmtech_website
-# DB_USERNAME=root
-# DB_PASSWORD=your_password
+# 编辑 .env 文件配置数据库
+# nano .env 或 vim .env
 ```
 
-### 4. 设置目录权限
+### 5. 设置权限
 ```bash
 # 设置存储目录权限
 chmod -R 775 storage bootstrap/cache
 
-# 设置所有者（根据你的Web服务器用户）
+# 设置所有者（根据你的 Web 服务器用户）
+# 如果是 Nginx + PHP-FPM，通常是 www-data
 chown -R www-data:www-data storage bootstrap/cache
 ```
 
-### 5. 运行项目
-```bash
-# 开发模式
-php artisan serve --host=0.0.0.0 --port=8000
+## 🔧 当前项目状态说明
 
-# 或配置Nginx/Apache指向 public/ 目录
-```
+### ✅ 已修复的问题
+1. **artisan 文件缺失** - 已添加
+2. **bootstrap/app.php 缺失** - 已添加
+3. **.gitignore 配置** - 已添加，排除 vendor/ 等目录
 
-### 6. 验证安装
-```bash
-# 检查 Laravel 版本
-php artisan --version
+### ⚠️ 需要注意
+1. **vendor 目录** - 需要首次运行 `composer install` 生成
+2. **composer.lock** - 会在安装依赖后自动生成
+3. **数据库配置** - 需要手动配置 .env 文件
 
-# 检查路由
-php artisan route:list
+### 📋 安装检查清单
+- [ ] 运行 `./server_test.sh` 检查环境
+- [ ] 运行 `composer install` 安装依赖
+- [ ] 配置 `.env` 文件中的数据库连接
+- [ ] 运行 `php artisan key:generate`
+- [ ] 设置目录权限
+- [ ] 测试 `php artisan --version`
 
-# 运行迁移（如果需要）
-php artisan migrate
-```
-
-## 🔧 故障排除
+## 🚨 常见问题解决方案
 
 ### 问题1: "Could not open input file: artisan"
-**解决方案**：
+**原因**: artisan 文件缺失或权限不正确
+**解决**:
 ```bash
-# 确保 artisan 文件存在且有执行权限
+# 检查文件是否存在
 ls -la artisan
+
+# 如果不存在，从 GitHub 重新拉取
+git pull origin main
+
+# 设置执行权限
 chmod +x artisan
 
-# 重新安装 Composer 依赖
+# 重新安装依赖
 rm -rf vendor composer.lock
 composer install --no-dev --optimize-autoloader
 ```
 
-### 问题2: 缺少 vendor 目录
-**解决方案**：
+### 问题2: Composer 安装失败
+**解决**:
 ```bash
-# 删除并重新安装
-rm -rf vendor
+# 使用中国镜像加速
+composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/
+
+# 清除缓存
+composer clear-cache
+
+# 重新安装
 composer install --no-dev --optimize-autoloader
 ```
 
-### 问题3: 权限问题
-**解决方案**：
+### 问题3: PHP 版本不兼容
+**要求**: PHP 8.2 或更高版本
+**检查**:
 ```bash
-# 修复目录权限
-chmod -R 775 storage bootstrap/cache
-chown -R www-data:www-data storage bootstrap/cache public
+php -v
+
+# 如果版本过低，升级 PHP
+# Ubuntu/Debian: sudo apt install php8.2
+# CentOS/RHEL: sudo yum install php82
 ```
 
-## 📞 支持
-如有问题，请检查：
-1. PHP 版本 >= 8.2
-2. Composer 已安装
-3. 数据库服务运行中
-4. 目录权限正确
+## 📞 技术支持
+
+### 快速诊断
+运行以下命令获取详细诊断信息：
+```bash
+./server_test.sh
+```
+
+### 获取帮助
+1. 查看本文档的故障排除部分
+2. 检查 GitHub Issues
+3. 提供以下信息寻求帮助：
+   - `./server_test.sh` 的输出
+   - 错误信息截图
+   - PHP 版本 (`php -v`)
+   - Composer 版本 (`composer --version`)
+
+### 项目状态更新
+- **最后更新**: 2026-03-08
+- **框架**: Laravel 11
+- **状态**: 已修复核心文件，待测试安装
+- **GitHub**: https://github.com/doney0318/mmtech-website
