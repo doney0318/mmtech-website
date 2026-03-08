@@ -536,3 +536,104 @@ composer show
 **状态**: 生产就绪  
 
 💡 **提示**: 安装过程中遇到任何问题，请参考故障排除部分或提交 Issue。祝您使用愉快！
+## 🚀 服务器安装指南
+
+### 1. 克隆项目
+```bash
+cd /root
+git clone git@github.com:doney0318/mmtech-website.git
+cd mmtech-website
+```
+
+### 2. 安装 Composer 依赖
+```bash
+# 安装 Composer（如果未安装）
+curl -sS https://getcomposer.org/installer | php
+mv composer.phar /usr/local/bin/composer
+
+# 安装项目依赖
+composer install --no-dev --optimize-autoloader
+```
+
+### 3. 配置环境
+```bash
+# 复制环境配置文件
+cp .env.example .env
+
+# 生成应用密钥
+php artisan key:generate
+
+# 配置数据库连接（编辑 .env 文件）
+# DB_CONNECTION=mysql
+# DB_HOST=127.0.0.1
+# DB_PORT=3306
+# DB_DATABASE=mmtech_website
+# DB_USERNAME=root
+# DB_PASSWORD=your_password
+```
+
+### 4. 设置目录权限
+```bash
+# 设置存储目录权限
+chmod -R 775 storage bootstrap/cache
+
+# 设置所有者（根据你的Web服务器用户）
+chown -R www-data:www-data storage bootstrap/cache
+```
+
+### 5. 运行项目
+```bash
+# 开发模式
+php artisan serve --host=0.0.0.0 --port=8000
+
+# 或配置Nginx/Apache指向 public/ 目录
+```
+
+### 6. 验证安装
+```bash
+# 检查 Laravel 版本
+php artisan --version
+
+# 检查路由
+php artisan route:list
+
+# 运行迁移（如果需要）
+php artisan migrate
+```
+
+## 🔧 故障排除
+
+### 问题1: "Could not open input file: artisan"
+**解决方案**：
+```bash
+# 确保 artisan 文件存在且有执行权限
+ls -la artisan
+chmod +x artisan
+
+# 重新安装 Composer 依赖
+rm -rf vendor composer.lock
+composer install --no-dev --optimize-autoloader
+```
+
+### 问题2: 缺少 vendor 目录
+**解决方案**：
+```bash
+# 删除并重新安装
+rm -rf vendor
+composer install --no-dev --optimize-autoloader
+```
+
+### 问题3: 权限问题
+**解决方案**：
+```bash
+# 修复目录权限
+chmod -R 775 storage bootstrap/cache
+chown -R www-data:www-data storage bootstrap/cache public
+```
+
+## 📞 支持
+如有问题，请检查：
+1. PHP 版本 >= 8.2
+2. Composer 已安装
+3. 数据库服务运行中
+4. 目录权限正确
