@@ -22,4 +22,14 @@ class Admin extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    public function setPasswordAttribute(string $value): void
+    {
+        if (str_starts_with($value, '$2y$') || str_starts_with($value, '$argon2')) {
+            $this->attributes['password'] = $value;
+            return;
+        }
+
+        $this->attributes['password'] = bcrypt($value);
+    }
 }
