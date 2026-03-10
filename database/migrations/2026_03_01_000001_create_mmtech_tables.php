@@ -13,7 +13,8 @@ return new class extends Migration
     public function up(): void
     {
         // 管理员表
-        Schema::create('mm_admin', function (Blueprint $table) {
+        if (!Schema::hasTable('mm_admin')) {
+            Schema::create('mm_admin', function (Blueprint $table) {
             $table->id();
             $table->string('username', 50)->unique()->comment('用户名');
             $table->string('password', 255)->comment('密码');
@@ -28,10 +29,12 @@ return new class extends Migration
             
             $table->index('status');
             $table->index('role_id');
-        });
+            });
+        }
 
         // 网站配置表
-        Schema::create('mm_config', function (Blueprint $table) {
+        if (!Schema::hasTable('mm_config')) {
+            Schema::create('mm_config', function (Blueprint $table) {
             $table->id();
             $table->string('key', 100)->unique()->comment('配置键');
             $table->text('value')->nullable()->comment('配置值');
@@ -45,10 +48,12 @@ return new class extends Migration
             
             $table->index('group');
             $table->index('sort');
-        });
+            });
+        }
 
         // 服务项目表
-        Schema::create('mm_service', function (Blueprint $table) {
+        if (!Schema::hasTable('mm_service')) {
+            Schema::create('mm_service', function (Blueprint $table) {
             $table->id();
             $table->string('slug', 100)->unique()->comment('URL标识');
             $table->string('title_zh', 200)->comment('中文标题');
@@ -67,10 +72,12 @@ return new class extends Migration
             $table->index('status');
             $table->index('sort');
             $table->index('slug');
-        });
+            });
+        }
 
         // 项目案例表
-        Schema::create('mm_case', function (Blueprint $table) {
+        if (!Schema::hasTable('mm_case')) {
+            Schema::create('mm_case', function (Blueprint $table) {
             $table->id();
             $table->string('title_zh', 200)->comment('中文标题');
             $table->string('title_en', 200)->comment('英文标题');
@@ -91,10 +98,12 @@ return new class extends Migration
             $table->index('status');
             $table->index('sort');
             $table->index('project_date');
-        });
+            });
+        }
 
         // 技术文章表
-        Schema::create('mm_article', function (Blueprint $table) {
+        if (!Schema::hasTable('mm_article')) {
+            Schema::create('mm_article', function (Blueprint $table) {
             $table->id();
             $table->string('slug', 100)->unique()->comment('URL标识');
             $table->string('title_zh', 200)->comment('中文标题');
@@ -116,10 +125,12 @@ return new class extends Migration
             $table->index('category_id');
             $table->index('published_at');
             $table->index('slug');
-        });
+            });
+        }
 
         // 留言咨询表
-        Schema::create('mm_inquiry', function (Blueprint $table) {
+        if (!Schema::hasTable('mm_inquiry')) {
+            Schema::create('mm_inquiry', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100)->comment('姓名');
             $table->string('email', 100)->comment('邮箱');
@@ -133,10 +144,12 @@ return new class extends Migration
             
             $table->index('status');
             $table->index('created_at');
-        });
+            });
+        }
 
         // 导航菜单表
-        Schema::create('mm_navigation', function (Blueprint $table) {
+        if (!Schema::hasTable('mm_navigation')) {
+            Schema::create('mm_navigation', function (Blueprint $table) {
             $table->id();
             $table->string('name_zh', 100)->comment('中文名称');
             $table->string('name_en', 100)->comment('英文名称');
@@ -152,7 +165,8 @@ return new class extends Migration
             $table->index('parent_id');
             $table->index('sort');
             $table->index('status');
-        });
+            });
+        }
     }
 
     /**
