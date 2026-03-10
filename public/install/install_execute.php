@@ -407,7 +407,7 @@ function insertBasicConfigs($pdo, $prefix) {
     ];
     
     foreach ($configs as $config) {
-        $stmt = $pdo->prepare("INSERT INTO `{$prefix}config` (\`key\`, \`value_zh\`, \`value_en\`, \`group\`, \`type\`, \`title_zh\`, \`title_en\`) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE \`value_zh\` = VALUES(\`value_zh\`), \`value_en\` = VALUES(\`value_en\`)");
+        $stmt = $pdo->prepare("INSERT INTO `{$prefix}config` (`key`, `value_zh`, `value_en`, `group`, `type`, `title_zh`, `title_en`) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `value_zh` = VALUES(`value_zh`), `value_en` = VALUES(`value_en`)");
         $stmt->execute($config);
     }
 }
@@ -426,7 +426,7 @@ function insertNavigationMenu($pdo, $prefix) {
     ];
     
     foreach ($menus as $menu) {
-        $stmt = $pdo->prepare("INSERT INTO `{$prefix}navigation` (\`name_zh\`, \`name_en\`, \`url\`, \`icon\`, \`type\`, \`parent_id\`, \`sort\`) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $pdo->prepare("INSERT INTO `{$prefix}navigation` (`name_zh`, `name_en`, `url`, `icon`, `type`, `parent_id`, `sort`) VALUES (?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute($menu);
     }
 }
@@ -443,7 +443,7 @@ function insertSampleData($pdo, $prefix) {
     ];
     
     foreach ($services as $service) {
-        $stmt = $pdo->prepare("INSERT INTO `{$prefix}service` (\`slug\`, \`title_zh\`, \`title_en\`, \`description_zh\`, \`description_en\`, \`content_zh\`, \`content_en\`, \`icon\`, \`image\`, \`status\`, \`sort\`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $pdo->prepare("INSERT INTO `{$prefix}service` (`slug`, `title_zh`, `title_en`, `description_zh`, `description_en`, `content_zh`, `content_en`, `icon`, `image`, `status`, `sort`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute($service);
     }
     
@@ -454,7 +454,7 @@ function insertSampleData($pdo, $prefix) {
     ];
     
     foreach ($articles as $article) {
-        $stmt = $pdo->prepare("INSERT INTO `{$prefix}article` (\`slug\`, \`title_zh\`, \`title_en\`, \`excerpt_zh\`, \`excerpt_en\`, \`content_zh\`, \`content_en\`, \`cover_image\`, \`author\`, \`category_id\`, \`tags\`, \`published_at\`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $pdo->prepare("INSERT INTO `{$prefix}article` (`slug`, `title_zh`, `title_en`, `excerpt_zh`, `excerpt_en`, `content_zh`, `content_en`, `cover_image`, `author`, `category_id`, `tags`, `published_at`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute($article);
     }
 }
