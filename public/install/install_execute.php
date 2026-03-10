@@ -105,8 +105,8 @@ try {
         copy($envExampleFile, $envFile);
     }
     
-    // 生成安全的 APP_KEY
-    $appKey = substr(bin2hex(random_bytes(32)), 0, 64);
+    // 生成 Laravel 兼容的 APP_KEY（base64: + 32 bytes）
+    $appKey = 'base64:' . base64_encode(random_bytes(32));
     
     // 步骤 2: 写入 .env 配置
     $envContent = file_get_contents($envExampleFile);
