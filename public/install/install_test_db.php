@@ -6,6 +6,15 @@ error_reporting(0);
 header('Content-Type: application/json');
 
 $input = json_decode(file_get_contents('php://input'), true);
+$projectRoot = realpath(__DIR__ . '/../..');
+
+if ($projectRoot === false) {
+    echo json_encode([
+        'success' => false,
+        'message' => '无法定位项目根目录'
+    ]);
+    exit;
+}
 
 $host = $input['db_host'] ?? '127.0.0.1';
 $port = $input['db_port'] ?? '3306';
@@ -32,17 +41,16 @@ try {
     
     // 测试文件权限（Laravel 关键目录）
     $pathsToCheck = [
-        '../storage/app/public' => 'storage/app/public',
-        '../storage/framework/cache' => 'storage/framework/cache',
-        '../storage/framework/sessions' => 'storage/framework/sessions',
-        '../storage/framework/views' => 'storage/framework/views',
-        '../storage/logs' => 'storage/logs',
-        '../bootstrap/cache' => 'bootstrap/cache'
+        $projectRoot . '/storage/app/public' => 'storage/app/public',
+        $projectRoot . '/storage/framework/cache' => 'storage/framework/cache',
+        $projectRoot . '/storage/framework/sessions' => 'storage/framework/sessions',
+        $projectRoot . '/storage/framework/views' => 'storage/framework/views',
+        $projectRoot . '/storage/logs' => 'storage/logs',
+        $projectRoot . '/bootstrap/cache' => 'bootstrap/cache'
     ];
     
     $writablePaths = [];
-    foreach ($pathsToCheck as $realPath => $displayPath) {
-        $fullPath = __DIR__ . '/' . $realPath;
+    foreach ($pathsToCheck as $fullPath => $displayPath) {
         if (!is_dir($fullPath)) {
             @mkdir($fullPath, 0755, true);
         }
@@ -50,7 +58,7 @@ try {
     }
     
     // 检查 Composer 依赖
-    $composerPath = __DIR__ . '/../vendor/autoload.php';
+    $composerPath = $projectRoot . '/vendor/autoload.php';
     $composerExists = file_exists($composerPath);
     
     // 保存配置到临时文件

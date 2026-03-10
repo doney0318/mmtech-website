@@ -6,39 +6,74 @@ error_reporting(0);
 header('Content-Type: application/json');
 set_time_limit(300); // 5分钟超时
 
-$input = json_decode(file_get_contents('php://input'), true);
+$input = json_decode(file_get_contents('php://input'), true) ?: [];
+$projectRoot = realpath(__DIR__ . '/../..');
+
+if ($projectRoot === false) {
+    echo json_encode(['success' => false, 'message' => '无法定位项目根目录']);
+    exit;
+}
 
 // 读取临时配置
 $tempConfigFile = __DIR__ . '/.db_config_temp.json';
 if (file_exists($tempConfigFile)) {
     $tempConfig = json_decode(file_get_contents($tempConfigFile), true);
-    if ($tempConfig && (time() - $tempConfig['tested_at']) < 300) {
+    if ($tempConfig && isset($tempConfig['tested_at']) && (time() - $tempConfig['tested_at']) < 300) {
         $db = $tempConfig;
     } else {
-        $db = $input['db'] ?? null;
+        $db = $input['db'] ?? [
+            'db_host' => $input['db_host'] ?? null,
+            'db_port' => $input['db_port'] ?? null,
+            'db_name' => $input['db_name'] ?? null,
+            'db_user' => $input['db_user'] ?? null,
+            'db_pass' => $input['db_pass'] ?? '',
+            'db_prefix' => $input['db_prefix'] ?? 'mm_',
+        ];
     }
 } else {
-    $db = $input['db'] ?? null;
+    $db = $input['db'] ?? [
+        'db_host' => $input['db_host'] ?? null,
+        'db_port' => $input['db_port'] ?? null,
+        'db_name' => $input['db_name'] ?? null,
+        'db_user' => $input['db_user'] ?? null,
+        'db_pass' => $input['db_pass'] ?? '',
+        'db_prefix' => $input['db_prefix'] ?? 'mm_',
+    ];
 }
 
-$admin = $input['admin'] ?? [];
+$admin = $input['admin'] ?? [
+    'admin_username' => $input['admin_username'] ?? null,
+    'admin_password' => $input['admin_password'] ?? null,
+    'admin_email' => $input['admin_email'] ?? null,
+];
 
-if (empty($db) || empty($admin)) {
+if (
+    empty($db['db_host']) ||
+    empty($db['db_port']) ||
+    empty($db['db_name']) ||
+    empty($db['db_user']) ||
+    empty($admin['admin_username']) ||
+    empty($admin['admin_password']) ||
+    empty($admin['admin_email'])
+) {
     echo json_encode(['success' => false, 'message' => '缺少必需的配置信息']);
     exit;
 }
 
 try {
     // 步骤 1: 生成 APP_KEY
-    if (!file_exists(__DIR__ . '/../.env')) {
-        copy(__DIR__ . '/../.env.example', __DIR__ . '/../.env');
+    $envFile = $projectRoot . '/.env';
+    $envExampleFile = $projectRoot . '/.env.example';
+
+    if (!file_exists($envFile)) {
+        copy($envExampleFile, $envFile);
     }
     
     // 生成安全的 APP_KEY
     $appKey = substr(bin2hex(random_bytes(32)), 0, 64);
     
     // 步骤 2: 写入 .env 配置
-    $envContent = file_get_contents(__DIR__ . '/../.env.example');
+    $envContent = file_get_contents($envExampleFile);
     $envContent = str_replace([
         'APP_KEY=',
         'DB_HOST=127.0.0.1',
@@ -55,11 +90,11 @@ try {
         'DB_DATABASE=' . $db['db_name'],
         'DB_USERNAME=' . $db['db_user'],
         'DB_PASSWORD=' . $db['db_pass'],
-        'APP_URL=' . (strpos($_SERVER['HTTP_HOST'], 'www.') !== false ? 'https://www.mmtech.ltd' : 'https://mmtech.ltd'),
+        'APP_URL=' . ((isset($_SERVER['REQUEST_SCHEME']) ? $_SERVER['REQUEST_SCHEME'] : 'https') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost')),
         'MMTECH_INSTALLED=true'
     ], $envContent);
     
-    file_put_contents(__DIR__ . '/../.env', $envContent);
+    file_put_contents($envFile, $envContent);
     
     // 步骤 3: 数据库连接和迁移
     $dsn = "mysql:host={$db['db_host']};port={$db['db_port']};charset=utf8mb4";
@@ -101,8 +136,8 @@ try {
     insertSampleData($pdo, $db['db_prefix']);
     
     // 步骤 9: 创建安装锁文件
-    $lockFile = __DIR__ . '/../storage/installed';
-    $storageDir = __DIR__ . '/../storage';
+    $lockFile = $projectRoot . '/storage/installed';
+    $storageDir = $projectRoot . '/storage';
     if (!is_dir($storageDir)) {
         mkdir($storageDir, 0755, true);
     }
@@ -114,12 +149,11 @@ try {
     
     // 步骤 10: 设置目录权限
     $pathsToSet = [
-        '../storage',
-        '../bootstrap/cache'
+        $projectRoot . '/storage',
+        $projectRoot . '/bootstrap/cache'
     ];
-    
-    foreach ($pathsToSet as $path) {
-        $fullPath = __DIR__ . '/' . $path;
+
+    foreach ($pathsToSet as $fullPath) {
         if (is_dir($fullPath)) {
             setDirectoryPermissions($fullPath);
         }
@@ -191,12 +225,12 @@ function getMigrationSQL($prefix) {
     CREATE TABLE IF NOT EXISTS `{$prefix}config` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         `key` varchar(100) NOT NULL COMMENT '配置键',
-        `value` text COMMENT '配置值',
+        `value_zh` text COMMENT '中文配置值',
+        `value_en` text COMMENT '英文配置值',
         `group` varchar(50) NOT NULL DEFAULT 'base' COMMENT '分组',
         `type` varchar(20) NOT NULL DEFAULT 'text' COMMENT '类型',
         `title_zh` varchar(100) NOT NULL COMMENT '中文标题',
         `title_en` varchar(100) NOT NULL COMMENT '英文标题',
-        `description` text COMMENT '描述',
         `sort` int(11) NOT NULL DEFAULT '0' COMMENT '排序',
         `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
         `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
