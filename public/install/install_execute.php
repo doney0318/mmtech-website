@@ -6,7 +6,20 @@ error_reporting(0);
 header('Content-Type: application/json');
 set_time_limit(300); // 5分钟超时
 
-$input = json_decode(file_get_contents('php://input'), true) ?: [];
+$rawBody = file_get_contents('php://input');
+$jsonInput = json_decode($rawBody, true);
+
+// 兼容 JSON / x-www-form-urlencoded / multipart/form-data
+$input = is_array($jsonInput) ? $jsonInput : [];
+if (empty($input) && !empty($_POST)) {
+    $input = $_POST;
+}
+if (empty($input) && is_string($rawBody) && $rawBody !== '') {
+    parse_str($rawBody, $parsedBody);
+    if (is_array($parsedBody) && !empty($parsedBody)) {
+        $input = $parsedBody;
+    }
+}
 $projectRoot = realpath(__DIR__ . '/../..');
 
 if ($projectRoot === false) {
@@ -47,16 +60,39 @@ $admin = $input['admin'] ?? [
     'admin_email' => $input['admin_email'] ?? null,
 ];
 
-if (
-    empty($db['db_host']) ||
-    empty($db['db_port']) ||
-    empty($db['db_name']) ||
-    empty($db['db_user']) ||
-    empty($admin['admin_username']) ||
-    empty($admin['admin_password']) ||
-    empty($admin['admin_email'])
-) {
-    echo json_encode(['success' => false, 'message' => '缺少必需的配置信息']);
+$missing = [];
+if (empty($db['db_host'])) {
+    $missing[] = 'db_host';
+}
+if (empty($db['db_port'])) {
+    $missing[] = 'db_port';
+}
+if (empty($db['db_name'])) {
+    $missing[] = 'db_name';
+}
+if (empty($db['db_user'])) {
+    $missing[] = 'db_user';
+}
+if (empty($admin['admin_username'])) {
+    $missing[] = 'admin_username';
+}
+if (empty($admin['admin_password'])) {
+    $missing[] = 'admin_password';
+}
+if (empty($admin['admin_email'])) {
+    $missing[] = 'admin_email';
+}
+
+if (!empty($missing)) {
+    echo json_encode([
+        'success' => false,
+        'message' => '缺少必需的配置信息：' . implode(', ', $missing),
+        'debug' => [
+            'content_type' => $_SERVER['CONTENT_TYPE'] ?? '',
+            'has_raw_body' => !empty($rawBody),
+            'input_keys' => array_keys($input),
+        ],
+    ]);
     exit;
 }
 
