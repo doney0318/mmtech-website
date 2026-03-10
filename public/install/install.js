@@ -163,7 +163,13 @@ function installSystem() {
     // 合并表单数据
     const adminData = Object.fromEntries(new FormData(adminForm));
     const dbData = Object.fromEntries(new FormData(dbForm));
-    const installData = {...dbData, ...adminData};
+    // 同时发送扁平和嵌套结构，兼容新旧安装后端
+    const installData = {
+        ...dbData,
+        ...adminData,
+        db: dbData,
+        admin: adminData,
+    };
     
     // 显示安装进度
     const installResult = document.getElementById('install-result');
