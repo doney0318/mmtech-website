@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 
 class LoginController extends Controller
 {
@@ -34,6 +33,7 @@ class LoginController extends Controller
         ]);
         
         $remember = $request->filled('remember');
+        $credentials['status'] = 1;
         
         if (Auth::guard('admin')->attempt($credentials, $remember)) {
             $request->session()->regenerate();
@@ -45,21 +45,31 @@ class LoginController extends Controller
                 'last_login_time' => now(),
             ]);
             
-            return response()->json([
-                'code' => 1,
-                'msg' => '登录成功',
-                'data' => [
-                    'username' => $admin->username,
-                    'nickname' => $admin->nickname,
-                ],
-                'redirect' => route('admin.dashboard')
-            ]);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'code' => 1,
+                    'msg' => '登录成功',
+                    'data' => [
+                        'username' => $admin->username,
+                        'nickname' => $admin->nickname,
+                    ],
+                    'redirect' => route('admin.dashboard')
+                ]);
+            }
+
+            return redirect()->route('admin.dashboard');
         }
-        
-        return response()->json([
-            'code' => 0,
-            'msg' => '用户名或密码错误'
-        ], 401);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'code' => 0,
+                'msg' => '用户名或密码错误'
+            ], 401);
+        }
+
+        return back()
+            ->withInput($request->only('username'))
+            ->withErrors(['username' => '用户名或密码错误']);
     }
     
     /**
