@@ -8,11 +8,14 @@ use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\FrontendController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return 'MMTech Laravel 11 is running.';
-});
+Route::get('/', [FrontendController::class, 'index'])->name('home');
+Route::get('/assets/{type}/{file}', [FrontendController::class, 'asset'])
+    ->where('type', 'css|js|images')
+    ->where('file', '[A-Za-z0-9._-]+')
+    ->name('frontend.assets');
 
 Route::prefix('admin')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('admin.login');
